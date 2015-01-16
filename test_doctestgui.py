@@ -30,7 +30,7 @@ def func2(a):
     >>> func2(3)
     9
     >>> func2(-1)
-    0
+    1
     """
     if a <= 0:
         return 0
@@ -40,7 +40,9 @@ def func2(a):
 
 def main():
     """ Main Code """
-    pass
+    print("test_doctestgui.py has been run")
+    import doctest
+    doctest.testmod()
 
 
 if __name__ == "__main__":

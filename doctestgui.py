@@ -22,15 +22,15 @@ locale_codec = QTextCodec.codecForLocale()
 from spyderlib.qt.compat import getopenfilename
 
 import sys
-import os
+#import os
 import os.path as osp
 import time
-import subprocess
+#import subprocess
 
 # Local imports
-from spyderlib import dependencies
+#from spyderlib import dependencies
 from spyderlib.utils import programs
-from spyderlib.utils.encoding import to_unicode_from_fs
+#from spyderlib.utils.encoding import to_unicode_from_fs
 from spyderlib.utils.qthelpers import get_icon, create_toolbutton
 from spyderlib.baseconfig import get_conf_path, get_translation
 from spyderlib.widgets.findreplace import FindReplace
@@ -41,29 +41,7 @@ from spyderlib.py3compat import to_text_string, getcwd, pickle
 _ = get_translation("p_doctest", dirname="spyderplugins")
 
 
-#DOCTEST_PATH = programs.find_program('doctest')
-
-
-#def get_doctest_version():
-#    """Return doctest version"""
-#    global DOCTEST_PATH
-#    if DOCTEST_PATH is None:
-#        return
-#    process = subprocess.Popen(['doctest', '--version'],
-#                               stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-#                               cwd=osp.dirname(DOCTEST_PATH),
-#                               shell=True if os.name == 'nt' else False)
-#    output = to_unicode_from_fs(process.stdout.read())
-#    vers = output.split(' ')[2][:-1]
-#    return vers
-#
-#
-#DOCTEST_REQVER = '>=0.25'
-#DOCTEST_VER = get_doctest_version()
-#dependencies.add("doctest",
-#                 _("Code doctest"),
-#                 required_version=DOCTEST_REQVER,
-#                 installed_version=DOCTEST_VER)
+DOCTEST_PATH = programs.find_program('doctest')
 
 
 class ResultsWindow(QWidget):
@@ -118,6 +96,7 @@ class ResultsWindow(QWidget):
         """ Refresh the widget, printing the results to the screen """
 #        title = _("Results for ") + self.filename       # What's this code?
         self.editor.clear()
+#        self.set_title(title)
 #        self.data = "Fake data!"
         self.data = self.results
         self.editor.set_text(self.data)
@@ -130,7 +109,7 @@ class DoctestWidget(QWidget):
     Program flow:
     """
     DATAPATH = get_conf_path('doctest.results')
-    print(DATAPATH)
+#    print(DATAPATH)
     VERSION = '1.1.0'
 
     def __init__(self, parent, max_entries=100):
@@ -184,7 +163,6 @@ class DoctestWidget(QWidget):
                                             text_beside_icon=True,
                                             tip=_("Complete output"),
                                             triggered=self.show_log)
-#        self.treewidget = ResultsTree(self)
         self.resultswidget = ResultsWindow(self)
 
         hlayout1 = QHBoxLayout()
@@ -209,33 +187,15 @@ class DoctestWidget(QWidget):
         self.process = None
         self.set_running_state(False)
 
-#        if DOCTEST_PATH is None:
-#            pass
-#            for widget in (self.resultswidget, self.filecombo,
-#                           self.start_button, self.stop_button):
-#                widget.setDisabled(True)
-#            if os.name == 'nt' \
-#               and programs.is_module_installed("doctest"):
-#                # Pylint is installed but pylint script is not in PATH
-#                # (AFAIK, could happen only on Windows)
-#                text = _('Doctest script was not found. Please add "%s" to PATH.')
-#                text = to_text_string(text) % osp.join(sys.prefix, "Scripts")
-#            else:
-#                text = _('Please install <b>doctest</b>:')
-#                url = 'https://pypi.python.org/pypi/doctest'
-#                text += ' <a href=%s>%s</a>' % (url, url)
-#            self.ratelabel.setText(text)
-#        else:
-#            self.show_data()
         self.show_data()
 
     def analyze(self, filename):
         """
         Run doctest analysis on the active file.
         """
-#        if DOCTEST_PATH is None:
-#            return
+        print(filename)
         filename = to_text_string(filename)    # filename is a QString instance
+        print(filename)
         self.kill_if_running()
         index, _data = self.get_data(filename)
         if index is None:
@@ -244,6 +204,7 @@ class DoctestWidget(QWidget):
         else:
             self.filecombo.setCurrentIndex(self.filecombo.findText(filename))
         self.filecombo.selected()
+        print("is valid? {}".format(self.filecombo.is_valid()))
         if self.filecombo.is_valid():
             self.start()
 
@@ -298,40 +259,6 @@ class DoctestWidget(QWidget):
 #            TextEditor(self.output, title=_("Pylint output"),
 #                       readonly=True, size=(700, 500)).exec_()
 
-#    def run_report(self, filename):
-#        """
-#        Run the doctest reporting for the file.
-#
-#        Calls ``doctest report`` as a separate thread.
-#
-#        Redirects all output to ``self.read_output()`` method.
-#
-#        Upon finish, calls the ``self.finished`` method.
-#        """
-#
-#        self.process = QProcess(self)
-#        self.process.setProcessChannelMode(QProcess.SeparateChannels)
-#        self.process.setWorkingDirectory(osp.dirname(filename))
-#        self.connect(self.process, SIGNAL("readyReadStandardOutput()"),
-#                     self.read_output)
-#        self.connect(self.process, SIGNAL("readyReadStandardError()"),
-#                     lambda: self.read_output(error=True))
-#        self.connect(self.process,
-#                     SIGNAL("finished(int,QProcess::ExitStatus)"),
-#                     self.finished)
-#        self.connect(self.stop_button, SIGNAL("clicked()"),
-#                     self.process.kill)
-#
-#        # start the process which runs the reporting function.
-#        p_args = ['report', '-m']
-#        self.process.start(DOCTEST_PATH, p_args)
-#
-#        running = self.process.waitForStarted()
-#        self.set_running_state(running)
-#        if not running:
-#            QMessageBox.critical(self, _("Error"),
-#                                 _("Process failed to start"))
-
     def run_doctest(self, filename):
         """
         Actually runs doctest on the file
@@ -350,42 +277,29 @@ class DoctestWidget(QWidget):
 
         Upon finished signal, calls self.finished().
         """
-        print("start called")
+        print("running start!")
         filename = to_text_string(self.filecombo.currentText())
 
-        # if we're running this file directly, then run a different file for
-        # doctest so that we don't fall into recursion.
-        if osp.basename(filename) == "doctestgui.py":
-            filename = osp.join(osp.split(filename)[0], "test_doctestgui.py")
-
-#        self.process = QProcess(self)
-#        self.process.setProcessChannelMode(QProcess.SeparateChannels)
-#        self.process.setWorkingDirectory(osp.dirname(filename))
-#        self.connect(self.process, SIGNAL("readyReadStandardOutput()"),
-#                     self.read_output)
-#        self.connect(self.process, SIGNAL("readyReadStandardError()"),
-#                     lambda: self.read_output(error=True))
-#        self.connect(self.process,
-#                     SIGNAL("finished(int,QProcess::ExitStatus)"),
-#                     self.finished)
-#        self.connect(self.stop_button, SIGNAL("clicked()"),
-#                     self.process.kill)
-
-        self.work_thread = QThread()
-        self.worker = Worker()
-        self.worker.moveToThread(self.work_thread)
-        self.work_thread.started.connect(self.worker.run_doctest, filename)
-        self.worker.done_signal.connect(self.finished)
+        self.process = QProcess(self)
+        self.process.setProcessChannelMode(QProcess.SeparateChannels)
+        self.process.setWorkingDirectory(osp.dirname(filename))
+        self.connect(self.process, SIGNAL("readyReadStandardOutput()"),
+                     self.read_output)
+        self.connect(self.process, SIGNAL("readyReadStandardError()"),
+                     lambda: self.read_output(error=True))
+        self.connect(self.process,
+                     SIGNAL("finished(int,QProcess::ExitStatus)"),
+                     self.finished)
+        self.connect(self.stop_button, SIGNAL("clicked()"),
+                     self.process.kill)
 
         self.output = ''
         self.error_output = ''
 
         # start the process which runs the doctest analysis.
-#        p_args = ['run', filename]
-#        self.process.start(DOCTEST_PATH, p_args)
-#        self.run_doctest(filename)              # XXX: This doens't work
-
-        running = self.work_thread.isRunning()
+        p_args = ['-m', 'doctest', filename, '-v']
+        self.process.start('python', p_args)
+        running = self.process.waitForStarted()
         self.set_running_state(running)
         if not running:
             QMessageBox.critical(self, _("Error"),
@@ -400,6 +314,7 @@ class DoctestWidget(QWidget):
         """
         Reads the output, both standard and error, to instance attributes
         """
+        print("Running read_output")
         if error:
             self.process.setReadChannel(QProcess.StandardError)
         else:
@@ -416,10 +331,14 @@ class DoctestWidget(QWidget):
             self.error_output += text
         else:
             self.output += text
+            if self.output == "":
+                self.output = "A-OK!"
 
     def finished(self):
         """ Processes the finish stae """
+        print("running fininished")
         self.set_running_state(False)
+
         if not self.output:
             if self.error_output:
                 QMessageBox.critical(self, _("Error"), self.error_output)
@@ -452,9 +371,14 @@ class DoctestWidget(QWidget):
 
         _index, data = self.get_data(filename)
         if data is None:
-            text = _('Source code has not been rated yet.')
-            self.resultswidget.clear_results()
-            date_text = ''
+            text = ''
+            datetime, results = data
+            text_style = "<span style=\'color: #444444\'><b>%s </b></span>"
+            self.resultswidget.set_results(filename, results)
+            date = to_text_string(time.strftime("%d %b %Y %H:%M",
+                                                datetime),
+                                  encoding='utf8')
+            date_text = text_style % date
         else:
             text = ''
             datetime, results = data
@@ -469,32 +393,13 @@ class DoctestWidget(QWidget):
         self.datelabel.setText(date_text)
 
 
-class Worker(QObject):
-    """
-    """
-    done_signal = Signal()
-
-    def __init__(self, parent=None):
-        QObject.__init__(self, parent)
-
-    @Slot()
-    def run_doctest(self, filename):
-        """
-        Actually runs doctest on the file
-        """
-        import doctest
-        fail_count, test_count = doctest.testfile(filename)
-        print(fail_count, test_count)
-        self.done_signal.emit()
-
-
 def test():
     """Run doctest widget test"""
     from spyderlib.utils.qthelpers import qapplication
     app = qapplication()
     widget = DoctestWidget(None)
     widget.show()
-    widget.analyze(__file__)
+    widget.analyze("test_doctestgui.py")
     sys.exit(app.exec_())
 
 
