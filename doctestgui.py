@@ -16,8 +16,7 @@ from __future__ import with_statement, print_function
 
 from spyderlib.qt.QtGui import (QHBoxLayout, QWidget,
                                 QMessageBox, QVBoxLayout, QLabel, QFont)
-from spyderlib.qt.QtCore import (SIGNAL, QProcess, QByteArray, QTextCodec,
-                                 QThread, QObject, Signal, Slot)
+from spyderlib.qt.QtCore import SIGNAL, QProcess, QByteArray, QTextCodec
 locale_codec = QTextCodec.codecForLocale()
 from spyderlib.qt.compat import getopenfilename
 
@@ -94,10 +93,7 @@ class ResultsWindow(QWidget):
 
     def refresh(self):
         """ Refresh the widget, printing the results to the screen """
-#        title = _("Results for ") + self.filename       # What's this code?
         self.editor.clear()
-#        self.set_title(title)
-#        self.data = "Fake data!"
         self.data = self.results
         self.editor.set_text(self.data)
 
@@ -105,11 +101,8 @@ class ResultsWindow(QWidget):
 class DoctestWidget(QWidget):
     """
     doctest widget.
-
-    Program flow:
     """
     DATAPATH = get_conf_path('doctest.results')
-#    print(DATAPATH)
     VERSION = '1.1.0'
 
     def __init__(self, parent, max_entries=100):
@@ -193,9 +186,7 @@ class DoctestWidget(QWidget):
         """
         Run doctest analysis on the active file.
         """
-        print(filename)
         filename = to_text_string(filename)    # filename is a QString instance
-        print(filename)
         self.kill_if_running()
         index, _data = self.get_data(filename)
         if index is None:
@@ -204,7 +195,7 @@ class DoctestWidget(QWidget):
         else:
             self.filecombo.setCurrentIndex(self.filecombo.findText(filename))
         self.filecombo.selected()
-        print("is valid? {}".format(self.filecombo.is_valid()))
+#        print("is valid? {}".format(self.filecombo.is_valid()))
         if self.filecombo.is_valid():
             self.start()
 
@@ -277,7 +268,6 @@ class DoctestWidget(QWidget):
 
         Upon finished signal, calls self.finished().
         """
-        print("running start!")
         filename = to_text_string(self.filecombo.currentText())
 
         self.process = QProcess(self)
@@ -292,12 +282,14 @@ class DoctestWidget(QWidget):
                      self.finished)
         self.connect(self.stop_button, SIGNAL("clicked()"),
                      self.process.kill)
+#                     self.kill)
 
         self.output = ''
         self.error_output = ''
 
         # start the process which runs the doctest analysis.
         p_args = ['-m', 'doctest', filename, '-v']
+        p_args = ['-m', 'doctest', filename]
         self.process.start('python', p_args)
         running = self.process.waitForStarted()
         self.set_running_state(running)
@@ -314,7 +306,6 @@ class DoctestWidget(QWidget):
         """
         Reads the output, both standard and error, to instance attributes
         """
-        print("Running read_output")
         if error:
             self.process.setReadChannel(QProcess.StandardError)
         else:
@@ -331,14 +322,13 @@ class DoctestWidget(QWidget):
             self.error_output += text
         else:
             self.output += text
-            if self.output == "":
-                self.output = "A-OK!"
 
     def finished(self):
-        """ Processes the finish stae """
-        print("running fininished")
+        """ Processes the finish state """
         self.set_running_state(False)
-
+        if not self.output:
+            # Make a note that everything ran just fine
+            self.output = "No Doctest Errors"
         if not self.output:
             if self.error_output:
                 QMessageBox.critical(self, _("Error"), self.error_output)
@@ -371,14 +361,17 @@ class DoctestWidget(QWidget):
 
         _index, data = self.get_data(filename)
         if data is None:
-            text = ''
-            datetime, results = data
-            text_style = "<span style=\'color: #444444\'><b>%s </b></span>"
-            self.resultswidget.set_results(filename, results)
-            date = to_text_string(time.strftime("%d %b %Y %H:%M",
-                                                datetime),
-                                  encoding='utf8')
-            date_text = text_style % date
+            text = _('Source code has not been rated yet.')
+            self.resultswidget.clear_results()
+            date_text = ''
+#            text = ''
+#            datetime, results = data
+#            text_style = "<span style=\'color: #444444\'><b>%s </b></span>"
+#            self.resultswidget.set_results(filename, results)
+#            date = to_text_string(time.strftime("%d %b %Y %H:%M",
+#                                                datetime),
+#                                  encoding='utf8')
+#            date_text = text_style % date
         else:
             text = ''
             datetime, results = data
@@ -395,11 +388,12 @@ class DoctestWidget(QWidget):
 
 def test():
     """Run doctest widget test"""
+    path = osp.join(osp.split(__file__)[0], "test_doctestgui.py")
     from spyderlib.utils.qthelpers import qapplication
     app = qapplication()
     widget = DoctestWidget(None)
     widget.show()
-    widget.analyze("test_doctestgui.py")
+    widget.analyze(path)
     sys.exit(app.exec_())
 
 

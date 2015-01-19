@@ -30,7 +30,7 @@ def func2(a):
     >>> func2(3)
     9
     >>> func2(-1)
-    1
+    0
     """
     if a <= 0:
         return 0

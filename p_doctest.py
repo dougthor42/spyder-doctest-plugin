@@ -113,7 +113,7 @@ class Doctest(DoctestWidget, SpyderPluginMixin):
         doctest_act.setEnabled(DOCTEST_PATH is not None)
         self.register_shortcut(doctest_act, context="doctest",
                                name="run analysis",
-                               default="Alt+F11")
+                               default="Alt+F12")
 
         self.main.source_menu_actions += [None, doctest_act]
         self.main.editor.pythonfile_dependent_actions += [doctest_act]
