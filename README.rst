@@ -17,7 +17,7 @@ Installation
 Usage
 -----
 
-With the file open that you want to run coverage on, press
+With the file open that you want to run doctest on, press
 ``ALT`` + ``F12``.
 
 Requires
